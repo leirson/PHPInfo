@@ -15,7 +15,9 @@ $options = [
 if (!is_dir(__DIR__ . '/backups')) {
     @mkdir(__DIR__ . '/backups', 0755, true);
 }
-
+if (!is_dir(__DIR__ . '/uploads')) {
+    @mkdir(__DIR__ . '/uploads', 0755, true);
+}
 try {
      $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
