@@ -1,7 +1,7 @@
 # PHPInfo
 Aplicativo web para gerenciar empresa de manutenção de informática
 
-Faça upload dos arquivos para seu servidor, configure os dados do seu banco de dados em config.php e logo após abra o endereço /install.php para realizar a instalação do sistema.
+Faça upload dos arquivos para seu servidor, abra o endereço /install.php para realizar a instalação do sistema.
 
 Segue as credenciais iniciais
 
