@@ -7,7 +7,7 @@ Segue as credenciais iniciais
 
 Administrador:
 
-Login: admin@phpinfo.com
+Login: admin@php.info
 
 Senha: admin
 
@@ -16,7 +16,7 @@ Nível: ADMIN
 ___________________________
 Técnico:
 
-Login: tecnico@phpinfo.com
+Login: tecnico@php.info
 
 Senha: tecnico
 
@@ -25,7 +25,7 @@ Nível: TECNICO
 ___________________________
 Caixa:
 
-Login: caixa@phpinfo.com
+Login: caixa@php.info
 
 Senha: caixa
 
