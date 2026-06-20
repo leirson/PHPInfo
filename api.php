@@ -82,6 +82,15 @@ try {
         ");
         $alertas = $stmtAlertas->fetchAll();
 
+        // Get common services
+        $commonServices = [];
+        try {
+            $stmtCS = $pdo->query("SELECT name, COUNT(*) as amount FROM service_order_items WHERE type = 'S' GROUP BY name ORDER BY amount DESC LIMIT 5");
+            if ($stmtCS) {
+                $commonServices = $stmtCS->fetchAll(PDO::FETCH_ASSOC);
+            }
+        } catch(Exception $e) {}
+
         echo json_encode([
             'osAbertas' => $osAbertas,
             'totalVendas' => $totalVendas,
@@ -89,7 +98,8 @@ try {
             'totalReceitas' => $totalVendas + $totalServicos,
             'totalClientes' => $totalClientes,
             'osAguardandoAprovacao' => $osAguardandoAprovacao,
-            'alertas' => $alertas
+            'alertas' => $alertas,
+            'commonServices' => $commonServices
         ]);
         exit;
     }
@@ -507,6 +517,19 @@ try {
             }
         } else {
             echo json_encode(['error' => 'Arquivo não encontrado']);
+        }
+        exit;
+    }
+
+    if ($action === 'delete_user') {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $id = $data['id'] ?? null;
+        if ($id) {
+            $stmt = $pdo->prepare("DELETE FROM users WHERE id = ? AND role != 'ADMIN'");
+            $stmt->execute([$id]);
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['error' => 'ID não fornecido']);
         }
         exit;
     }

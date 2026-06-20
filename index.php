@@ -14,6 +14,7 @@ if (!isset($_SESSION['user_id'])) {
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -1248,8 +1249,9 @@ if (!isset($_SESSION['user_id'])) {
                                 <span class="text-xs text-slate-400 capitalize">Tema: ${row.theme || 'light'}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-right">
+                        <td class="px-6 py-4 text-right flex justify-end space-x-2">
                              <button onclick="openModal('${row.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                             ${row.role !== 'ADMIN' ? `<button onclick="deleteUser('${row.id}')" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Excluir"><i data-lucide="trash" class="w-4 h-4"></i></button>` : ''}
                         </td>
                     </tr>`;
                 });
@@ -1611,6 +1613,26 @@ if (!isset($_SESSION['user_id'])) {
             }
         }
 
+        async function deleteUser(id) {
+            if (confirm('Deseja realmente excluir este usuário? Esta ação não pode ser desfeita.')) {
+                try {
+                    const res = await fetch('api.php?action=delete_user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        loadData('users');
+                    } else {
+                        alert('Erro ao excluir usuário: ' + (data.error || 'Erro desconhecido.'));
+                    }
+                } catch(e) {
+                    alert('Erro ao excluir: ' + e.message);
+                }
+            }
+        }
+
         async function uploadBackup() {
             const fileInput = document.getElementById('upload-backup-file');
             if (!fileInput.files.length) {
@@ -1816,6 +1838,17 @@ if (!isset($_SESSION['user_id'])) {
             }
             
             html += `</div></div></div>`;
+            
+            // D3 Services Chart container
+            if (data.commonServices && data.commonServices.length > 0) {
+                html += `
+                <div class="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-6 flex items-center"><i data-lucide="pie-chart" class="w-5 h-5 mr-2 text-indigo-500"></i> Serviços Mais Requisitados</h3>
+                    <div id="d3-services-chart" class="w-full h-72 flex justify-center items-center"></div>
+                </div>
+                `;
+            }
+            
             document.getElementById('dashboard-view').innerHTML = html;
             lucide.createIcons();
             
@@ -1825,10 +1858,10 @@ if (!isset($_SESSION['user_id'])) {
                 new Chart(ctxDash.getContext('2d'), {
                     type: 'bar',
                     data: {
-                        labels: ['Jan', 'Fev', 'Mar', 'Abr'],
+                        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
                         datasets: [{
                             label: 'Receita',
-                            data: [4000, 3000, 5000, parseFloat(data.totalReceitas)],
+                            data: [4000, 3000, 5000, 2000, 4500, parseFloat(data.totalReceitas)],
                             backgroundColor: '#3b82f6',
                             borderRadius: 4,
                             borderSkipped: false
@@ -1847,6 +1880,63 @@ if (!isset($_SESSION['user_id'])) {
                     }
                 });
             }
+            
+            // Render D3 chart
+            if (data.commonServices && data.commonServices.length > 0) {
+                renderD3ServicesChart(data.commonServices);
+            }
+        }
+        
+        function renderD3ServicesChart(services) {
+            const container = document.getElementById('d3-services-chart');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const width = container.clientWidth || 500;
+            const height = 280;
+            const margin = {top: 20, right: 20, bottom: 30, left: 40};
+            
+            const x = d3.scaleBand()
+                .domain(services.map(d => d.name))
+                .range([margin.left, width - margin.right])
+                .padding(0.1);
+            
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(services, d => parseInt(d.amount))]).nice()
+                .range([height - margin.bottom, margin.top]);
+                
+            const svg = d3.select('#d3-services-chart')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+                
+            svg.append('g')
+                .attr('fill', '#4f46e5')
+                .selectAll('rect')
+                .data(services)
+                .join('rect')
+                .attr('x', d => x(d.name))
+                .attr('y', d => y(parseInt(d.amount)))
+                .attr('height', d => y(0) - y(parseInt(d.amount)))
+                .attr('width', x.bandwidth())
+                .attr('rx', 4);
+                
+            svg.append('g')
+                .attr('transform', \`translate(0,\${height - margin.bottom})\`)
+                .call(d3.axisBottom(x).tickSizeOuter(0))
+                .selectAll("text")  
+                .style("text-anchor", "middle")
+                .style("fill", "#64748b")
+                .style("font-family", "Inter, sans-serif");
+                
+            svg.append('g')
+                .attr('transform', \`translate(\${margin.left},0)\`)
+                .call(d3.axisLeft(y).ticks(5))
+                .selectAll("text")
+                .style("fill", "#64748b")
+                .style("font-family", "Inter, sans-serif");
+                
+            svg.selectAll('.domain, .tick line').attr('stroke', '#e2e8f0');
         }
         
         loadData('dashboard');
