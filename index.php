@@ -726,7 +726,14 @@ if (!isset($_SESSION['user_id'])) {
                                 <span>Filtrar</span>
                             </button>
                         </div>
-                        <div id="pos-results" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <div class="flex space-x-2 mt-4 overflow-x-auto pb-2 scrollbar-none">
+                            <button onclick="setPosFilter('all')" class="pos-filter-btn px-4 py-2 rounded-lg bg-blue-600 text-white font-medium text-sm whitespace-nowrap" id="pos-filter-all">Todos</button>
+                            <button onclick="setPosFilter('os')" class="pos-filter-btn px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-sm whitespace-nowrap" id="pos-filter-os">Ordens de Serviço</button>
+                            <button onclick="setPosFilter('products')" class="pos-filter-btn px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-sm whitespace-nowrap" id="pos-filter-products">Produtos</button>
+                            <button onclick="setPosFilter('services')" class="pos-filter-btn px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-sm whitespace-nowrap" id="pos-filter-services">Serviços</button>
+                            <button onclick="setPosFilter('clients')" class="pos-filter-btn px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-sm whitespace-nowrap" id="pos-filter-clients">Clientes</button>
+                        </div>
+                        <div id="pos-results" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
                         </div>
                     </div>
                     <div class="w-full lg:w-[400px] bg-white border-l border-slate-200 shadow-xl flex flex-col min-h-[calc(100vh-4rem)] z-10 sticky top-16">
@@ -895,52 +902,78 @@ if (!isset($_SESSION['user_id'])) {
             }
         }
 
+        let currentPosFilter = 'all';
+        function setPosFilter(filter) {
+            currentPosFilter = filter;
+            document.querySelectorAll('.pos-filter-btn').forEach(btn => {
+                btn.classList.replace('bg-blue-600', 'bg-white');
+                btn.classList.replace('text-white', 'text-slate-600');
+                btn.classList.add('border', 'border-slate-200');
+            });
+            
+            const activeBtn = document.getElementById('pos-filter-' + filter);
+            if(activeBtn) {
+                activeBtn.classList.replace('bg-white', 'bg-blue-600');
+                activeBtn.classList.replace('text-slate-600', 'text-white');
+                activeBtn.classList.remove('border', 'border-slate-200');
+            }
+            handlePosSearch();
+        }
+
         function handlePosSearch() {
             const query = document.getElementById('pos-search').value.toLowerCase();
             const data = window.posData;
             let html = '';
             
-            // Search OS
-            const matchedOs = data.orders.filter(o => o.device?.toLowerCase().includes(query) || o.id.toLowerCase().includes(query) || o.clientName?.toLowerCase().includes(query));
-            matchedOs.slice(0, 5).forEach(o => {
-                html += `<div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 cursor-pointer hover:border-indigo-400 hover:shadow-md transition" onclick="addPosItem('O', '${o.id}')">
-                    <p class="text-xs font-bold text-indigo-600 mb-1">ORDEM DE SERVIÇO</p>
-                    <p class="font-bold text-slate-800 truncate">${o.device}</p>
-                    <p class="text-xs text-slate-500 mb-2 truncate">${o.clientName}</p>
-                    <p class="font-black text-indigo-700">${formatCurrency(o.totalCost)}</p>
-                </div>`;
-            });
+            if (currentPosFilter === 'all' || currentPosFilter === 'os') {
+                // Search OS
+                const matchedOs = data.orders.filter(o => o.device?.toLowerCase().includes(query) || o.id.toLowerCase().includes(query) || o.clientName?.toLowerCase().includes(query));
+                matchedOs.slice(0, currentPosFilter === 'os' ? 20 : 5).forEach(o => {
+                    html += `<div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 cursor-pointer hover:border-indigo-400 hover:shadow-md transition" onclick="addPosItem('O', '${o.id}')">
+                        <p class="text-xs font-bold text-indigo-600 mb-1">ORDEM DE SERVIÇO</p>
+                        <p class="font-bold text-slate-800 truncate">${o.device}</p>
+                        <p class="text-xs text-slate-500 mb-2 truncate">${o.clientName}</p>
+                        <p class="font-black text-indigo-700">${formatCurrency(o.totalCost)}</p>
+                    </div>`;
+                });
+            }
             
-            // Search Products
-            const matchedProds = data.products.filter(p => p.name?.toLowerCase().includes(query) || p.sku?.toLowerCase().includes(query));
-            matchedProds.slice(0, 10).forEach(p => {
-                html += `<div class="bg-white p-4 rounded-xl border border-slate-200 cursor-pointer hover:border-blue-500 hover:shadow-md transition" onclick="addPosItem('P', '${p.id}')">
-                    <p class="text-xs font-bold text-blue-600 mb-1">PRODUTO</p>
-                    <p class="font-bold text-slate-800 truncate mb-1">${p.name}</p>
-                    <p class="text-xs text-slate-500 mb-2">SKU: ${p.sku}</p>
-                    <p class="font-black text-blue-600">${formatCurrency(p.price)}</p>
-                </div>`;
-            });
+            if (currentPosFilter === 'all' || currentPosFilter === 'products') {
+                // Search Products
+                const matchedProds = data.products.filter(p => p.name?.toLowerCase().includes(query) || p.sku?.toLowerCase().includes(query));
+                matchedProds.slice(0, currentPosFilter === 'products' ? 20 : 10).forEach(p => {
+                    html += `<div class="bg-white p-4 rounded-xl border border-slate-200 cursor-pointer hover:border-blue-500 hover:shadow-md transition" onclick="addPosItem('P', '${p.id}')">
+                        <p class="text-xs font-bold text-blue-600 mb-1">PRODUTO</p>
+                        <p class="font-bold text-slate-800 truncate mb-1">${p.name}</p>
+                        <p class="text-xs text-slate-500 mb-2">SKU: ${p.sku}</p>
+                        <p class="font-black text-blue-600">${formatCurrency(p.price)}</p>
+                    </div>`;
+                });
+            }
             
-            // Search Services
-            const matchedServs = data.services.filter(s => s.name?.toLowerCase().includes(query));
-            matchedServs.slice(0, 10).forEach(s => {
-                html += `<div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 cursor-pointer hover:border-emerald-400 hover:shadow-md transition" onclick="addPosItem('S', '${s.id}')">
-                    <p class="text-xs font-bold text-emerald-600 mb-1">SERVIÇO</p>
-                    <p class="font-bold text-slate-800 truncate mb-3">${s.name}</p>
-                    <p class="font-black text-emerald-700">${formatCurrency(s.price)}</p>
-                </div>`;
-            });
+            if (currentPosFilter === 'all' || currentPosFilter === 'services') {
+                // Search Services
+                const matchedServs = data.services.filter(s => s.name?.toLowerCase().includes(query));
+                matchedServs.slice(0, currentPosFilter === 'services' ? 20 : 10).forEach(s => {
+                    html += `<div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 cursor-pointer hover:border-emerald-400 hover:shadow-md transition" onclick="addPosItem('S', '${s.id}')">
+                        <p class="text-xs font-bold text-emerald-600 mb-1">SERVIÇO</p>
+                        <p class="font-bold text-slate-800 truncate mb-3">${s.name}</p>
+                        <p class="font-black text-emerald-700">${formatCurrency(s.price)}</p>
+                    </div>`;
+                });
+            }
             
-            // Search Clients
-            const matchedClients = data.clients.filter(c => c.name?.toLowerCase().includes(query) || c.document?.toLowerCase().includes(query) || c.phone?.toLowerCase().includes(query));
-            matchedClients.slice(0, 5).forEach(c => {
-                html += `<div class="bg-amber-50 p-4 rounded-xl border border-amber-100 cursor-pointer hover:border-amber-400 hover:shadow-md transition" onclick="setPosClient('${c.id}', '${c.name.replace(/'/g, "\\'")}')">
-                    <p class="text-xs font-bold text-amber-600 mb-1">CLIENTE (Vincular)</p>
-                    <p class="font-bold text-slate-800 truncate">${c.name}</p>
-                    <p class="text-xs text-slate-500 truncate">${c.document || 'Sem Doc'} • ${c.phone || ''}</p>
-                </div>`;
-            });
+            if (currentPosFilter === 'all' || currentPosFilter === 'clients') {
+                // Search Clients
+                const matchedClients = data.clients.filter(c => c.name?.toLowerCase().includes(query) || c.document?.toLowerCase().includes(query) || c.phone?.toLowerCase().includes(query));
+                matchedClients.slice(0, currentPosFilter === 'clients' ? 20 : 5).forEach(c => {
+                    html += `<div class="bg-amber-50 p-4 rounded-xl border border-amber-100 cursor-pointer hover:border-amber-400 hover:shadow-md transition" onclick="setPosClient('${c.id}', '${c.name.replace(/'/g, "\\'")}')">
+                        <p class="text-xs font-bold text-amber-600 mb-1">CLIENTE (Vincular)</p>
+                        <p class="font-bold text-slate-800 truncate">${c.name}</p>
+                        <p class="text-xs text-slate-500 truncate">${c.document || 'Sem Doc'} • ${c.phone || ''}</p>
+                    </div>`;
+                });
+            }
 
             if(!html) {
                  html = `<div class="col-span-full p-8 text-center text-slate-500">Nenhum resultado encontrado para "${query}".</div>`;

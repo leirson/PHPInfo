@@ -114,8 +114,8 @@ if ($action === 'apply') {
                         mkdir($targetPath, 0755, true);
                     }
                 } else {
-                    // Don't overwrite config.php if it exists
-                    if ($subPathName === 'config.php' && file_exists($targetPath)) {
+                    // Don't overwrite config.php at all
+                    if (basename($subPathName) === 'config.php') {
                         continue;
                     }
                     copy($item, $targetPath);
