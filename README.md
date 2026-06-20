@@ -5,8 +5,28 @@ Faça upload dos arquivos para seu servidor, configure os dados do seu banco de 
 
 Segue as credenciais iniciais
 
-Admin Master | admin@techmanager.com | ADMIN
+Administrador:
 
-João Técnico | joao@techmanager.com | TECNICO
+Login: admin@phpinfo.com
 
-Maria Caixa | maria@techmanager.com | CAIXA
+Senha: admin
+
+Nível: ADMIN
+
+___________________________
+Técnico:
+
+Login: tecnico@phpinfo.com
+
+Senha: tecnico
+
+Nível: TECNICO
+
+___________________________
+Caixa:
+
+Login: caixa@phpinfo.com
+
+Senha: caixa
+
+Nível: CAIXA
