@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtCount = $pdo->query("SELECT COUNT(*) FROM users");
         $count = $stmtCount->fetchColumn();
         
-        if ($count == 0 && $email === 'admin@admin.com' && $password === 'admin') {
+        if ($count == 0 && $email === 'admin@php.info' && $password === 'admin') {
             $_SESSION['user_id'] = 'setup_admin';
             $_SESSION['user_name'] = 'Admin Setup';
             $_SESSION['user_role'] = 'ADMIN';

@@ -50,6 +50,17 @@ if (!file_exists(__DIR__ . '/.db_synced')) {
         try { $pdo->exec("ALTER TABLE users ADD COLUMN password VARCHAR(255)"); } catch(Exception $e) {}
         try { $pdo->exec("ALTER TABLE users ADD COLUMN theme VARCHAR(50) DEFAULT 'light'"); } catch(Exception $e) {}
 
+        // Other column fallbacks
+        try { $pdo->exec("ALTER TABLE products ADD COLUMN category VARCHAR(100)"); } catch(Exception $e) {}
+        try { $pdo->exec("ALTER TABLE service_orders ADD COLUMN category VARCHAR(50)"); } catch(Exception $e) {}
+        try { $pdo->exec("ALTER TABLE service_orders ADD COLUMN technicianId VARCHAR(50)"); } catch(Exception $e) {}
+        try { $pdo->exec("ALTER TABLE service_orders ADD COLUMN accessories VARCHAR(255)"); } catch(Exception $e) {}
+        try { $pdo->exec("ALTER TABLE service_orders ADD COLUMN reportedIssue TEXT"); } catch(Exception $e) {}
+        try { $pdo->exec("ALTER TABLE service_orders ADD COLUMN internalNotes TEXT"); } catch(Exception $e) {}
+        try { $pdo->exec("ALTER TABLE service_orders ADD COLUMN laborCost DECIMAL(10,2)"); } catch(Exception $e) {}
+        try { $pdo->exec("ALTER TABLE financeiro ADD COLUMN category VARCHAR(100)"); } catch(Exception $e) {}
+        try { $pdo->exec("ALTER TABLE financeiro ADD COLUMN osId VARCHAR(50)"); } catch(Exception $e) {}
+
         file_put_contents(__DIR__ . '/.db_synced', '1');
     } catch(Exception $e) {}
 }

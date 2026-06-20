@@ -657,12 +657,12 @@ if (!isset($_SESSION['user_id'])) {
 
         function getStatusColor(status) {
             switch (status) {
-                case 'ABERTA': return 'bg-blue-100 text-blue-800';
+                case 'ABERTA': return 'bg-red-100 text-red-800';
                 case 'PARA_ORCAMENTO': return 'bg-purple-100 text-purple-800';
-                case 'AGUARDANDO_APROVACAO': return 'bg-yellow-100 text-yellow-800';
+                case 'AGUARDANDO_APROVACAO': return 'bg-orange-100 text-orange-800';
                 case 'APROVADA': return 'bg-indigo-100 text-indigo-800';
-                case 'EM_MANUTENCAO': return 'bg-orange-100 text-orange-800';
-                case 'FINALIZADA': return 'bg-teal-100 text-teal-800';
+                case 'EM_MANUTENCAO': return 'bg-yellow-100 text-yellow-800';
+                case 'FINALIZADA': return 'bg-emerald-100 text-emerald-800';
                 case 'CONCLUIDA': return 'bg-green-100 text-green-800';
                 case 'ENTREGUE': return 'bg-emerald-100 text-emerald-800';
                 default: return 'bg-gray-100 text-gray-800';
@@ -671,13 +671,13 @@ if (!isset($_SESSION['user_id'])) {
 
         function getStatusLabel(status) {
             const map = {
-                'ABERTA': 'Aberta',
+                'ABERTA': 'Pendente',
                 'PARA_ORCAMENTO': 'Para Orçamento',
                 'AGUARDANDO_APROVACAO': 'Aguard. Aprovação',
                 'APROVADA': 'Aprovada',
-                'EM_MANUTENCAO': 'Em Manutenção',
+                'EM_MANUTENCAO': 'Em Andamento',
                 'FINALIZADA': 'Finalizada',
-                'CONCLUIDA': 'Concluída (Faturada)',
+                'CONCLUIDA': 'Concluído',
                 'ENTREGUE': 'Entregue',
             };
             return map[status] || status;
@@ -1922,7 +1922,7 @@ if (!isset($_SESSION['user_id'])) {
                 .attr('rx', 4);
                 
             svg.append('g')
-                .attr('transform', \`translate(0,\${height - margin.bottom})\`)
+                .attr('transform', `translate(0,${height - margin.bottom})`)
                 .call(d3.axisBottom(x).tickSizeOuter(0))
                 .selectAll("text")  
                 .style("text-anchor", "middle")
@@ -1930,7 +1930,7 @@ if (!isset($_SESSION['user_id'])) {
                 .style("font-family", "Inter, sans-serif");
                 
             svg.append('g')
-                .attr('transform', \`translate(\${margin.left},0)\`)
+                .attr('transform', `translate(${margin.left},0)`)
                 .call(d3.axisLeft(y).ticks(5))
                 .selectAll("text")
                 .style("fill", "#64748b")
