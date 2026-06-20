@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -104,10 +111,10 @@
          <div class="p-4 border-t border-slate-800">
              <div class="flex flex-col space-y-2">
                  <div class="flex items-center space-x-3 px-4 py-2">
-                     <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">A</div>
+                     <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold"><?php echo substr($_SESSION['user_name'] ?? 'U', 0, 1); ?></div>
                      <div>
-                         <p class="text-sm font-medium text-white">Admin</p>
-                         <p class="text-xs text-slate-400">admin</p>
+                         <p class="text-sm font-medium text-white"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></p>
+                         <p class="text-xs text-slate-400"><?php echo htmlspecialchars($_SESSION['user_role'] ?? 'role'); ?></p>
                      </div>
                  </div>
                  <button onclick="logout()" class="flex items-center justify-center space-x-2 text-slate-400 hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition">
@@ -139,12 +146,18 @@
                 <!-- Dashboard content injected via JS -->
             </div>
             
-            <div id="table-controls" class="hidden mb-6 flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                <div class="relative w-72">
-                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                    <input type="text" id="search-input" placeholder="Pesquisar..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" oninput="handleSearch()">
+            <div id="table-controls" class="hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200 gap-4 sm:gap-0">
+                <div class="flex items-center space-x-2 w-full sm:w-auto">
+                    <div class="relative flex-1 sm:w-72">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="search-input" placeholder="Pesquisar..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" onkeydown="if(event.key === 'Enter') handleSearch()">
+                    </div>
+                    <button onclick="handleSearch()" class="bg-slate-100 text-slate-700 border border-slate-300 px-4 py-2 rounded-lg font-medium hover:bg-slate-200 transition flex items-center space-x-2 text-sm whitespace-nowrap">
+                        <i data-lucide="filter" class="w-4 h-4"></i>
+                        <span>Filtrar</span>
+                    </button>
                 </div>
-                <button id="btn-new" onclick="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 hover:bg-blue-700 transition">
+                <button id="btn-new" onclick="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 hover:bg-blue-700 transition w-full sm:w-auto justify-center sm:justify-start">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     <span id="btn-new-text">Novo</span>
                 </button>
@@ -580,10 +593,12 @@
                 document.getElementById('dashboard-view').classList.add('hidden');
                 document.getElementById('table-view').classList.remove('hidden');
                 
+                document.getElementById('table-controls').classList.remove('hidden');
+                
                 if (action === 'history') {
-                    document.getElementById('table-controls').classList.add('hidden');
+                    document.getElementById('btn-new').classList.add('hidden');
                 } else {
-                    document.getElementById('table-controls').classList.remove('hidden');
+                    document.getElementById('btn-new').classList.remove('hidden');
                     document.getElementById('btn-new-text').innerText = newBtnText[action] || 'Novo';
                 }
             }
@@ -701,9 +716,15 @@
                 let html = `
                 <div class="flex flex-col lg:flex-row h-full">
                     <div class="flex-1 space-y-4 p-6 bg-slate-50">
-                        <div class="relative">
-                            <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"></i>
-                            <input type="text" id="pos-search" oninput="handlePosSearch()" placeholder="Buscar OS, Produto, Serviço ou Cliente..." class="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-medium">
+                        <div class="relative flex space-x-2">
+                            <div class="relative flex-1">
+                                <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                                <input type="text" id="pos-search" onkeydown="if(event.key === 'Enter') handlePosSearch()" placeholder="Buscar OS, Produto, Serviço ou Cliente..." class="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-medium">
+                            </div>
+                            <button onclick="handlePosSearch()" class="bg-indigo-600 text-white px-6 py-4 rounded-xl font-bold hover:bg-indigo-700 transition shadow-sm whitespace-nowrap flex items-center space-x-2">
+                                <i data-lucide="filter" class="w-5 h-5"></i>
+                                <span>Filtrar</span>
+                            </button>
                         </div>
                         <div id="pos-results" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                         </div>
@@ -944,11 +965,11 @@
                   <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-slate-800">Relatórios Gerenciais</h2>
                     <div class="flex space-x-2">
-                        <button onclick="window.open('export_report.php?type=financeiro', '_blank')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center space-x-2 hover:bg-slate-50 transition border-r">
+                        <button onclick="window.open('report.php?type=financeiro', '_blank')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center space-x-2 hover:bg-slate-50 transition border-r">
                           <i data-lucide="file-text" class="w-4 h-4 text-emerald-600"></i>
                           <span>PDF Financeiro</span>
                         </button>
-                        <button onclick="window.open('export_report.php?type=produtividade', '_blank')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center space-x-2 hover:bg-slate-50 transition">
+                        <button onclick="window.open('report.php?type=produtividade', '_blank')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center space-x-2 hover:bg-slate-50 transition">
                           <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-600"></i>
                           <span>PDF Produtividade</span>
                         </button>
@@ -1274,7 +1295,7 @@
                 itemsHtml += '</tbody></table>';
 
                 const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-                const publicUrl = `${baseUrl}/export_public_os.php?id=${id}`;
+                const publicUrl = `${baseUrl}/public_os.php?id=${id}`;
                 const qrCodeImg = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(publicUrl)}`;
 
                 const printWindow = window.open('', '_blank');
@@ -1320,9 +1341,7 @@
         }
 
         function logout() {
-            alert('Logout efetuado com sucesso!');
-            // Real implementation would destroy session and redirect
-            window.location.reload();
+            window.location.href = 'logout.php';
         }
 
         async function performBackup() {
@@ -1391,6 +1410,20 @@
                             <h4 class="font-semibold text-slate-700 mb-2">Últimos Backups</h4>
                             <div id="backup-list" class="space-y-2">
                                 <div class="text-sm text-slate-500 flex items-center"><i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i> Caregando...</div>
+                            </div>
+                            
+                            <div class="mt-6 border-t border-slate-200 pt-6">
+                                <h4 class="font-semibold text-slate-700 mb-2 flex items-center"><i data-lucide="github" class="w-4 h-4 mr-2"></i> Atualização do Sistema</h4>
+                                <p class="text-sm text-slate-500 mb-4">Verifique se há novas versões do sistema disponíveis no GitHub e atualize os arquivos automaticamente.</p>
+                                <div class="flex items-center space-x-4">
+                                    <button onclick="checkUpdates()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition flex items-center" id="btn-check-updates">
+                                        <i data-lucide="refresh-cw" class="w-4 h-4 mr-2" id="update-spinner"></i> <span>Verificar Atualizações</span>
+                                    </button>
+                                    <button onclick="applyUpdate()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700 transition flex items-center hidden" id="btn-apply-update">
+                                        <i data-lucide="download" class="w-4 h-4 mr-2"></i> <span>Aplicar Atualização</span>
+                                    </button>
+                                </div>
+                                <div id="update-status" class="mt-3 text-sm font-medium text-slate-600"></div>
                             </div>
                          </div>
                      </div>
@@ -1637,6 +1670,61 @@
              } catch (e) {
                  alert('Erro de rede: ' + e.message);
              }
+        }
+
+        async function checkUpdates() {
+            const btn = document.getElementById('btn-check-updates');
+            const spinner = document.getElementById('update-spinner');
+            const status = document.getElementById('update-status');
+            const applyBtn = document.getElementById('btn-apply-update');
+            
+            spinner.classList.add('animate-spin');
+            btn.disabled = true;
+            status.innerHTML = '<span class="text-blue-600">Buscando atualizações no GitHub...</span>';
+            applyBtn.classList.add('hidden');
+            
+            try {
+                const res = await fetch('update.php?action=check');
+                const data = await res.json();
+                if (data.update_available) {
+                     status.innerHTML = `<span class="text-emerald-600 font-bold">Atualização encontrada!</span> <span class="text-slate-500">Versão: ${data.latest_version.substring(0, 7)}</span>`;
+                     applyBtn.classList.remove('hidden');
+                } else {
+                     status.innerHTML = '<span class="text-slate-600">O sistema já está na versão mais recente.</span>';
+                }
+            } catch(e) {
+                status.innerHTML = `<span class="text-red-500">Erro ao verificar atualizações: ${e.message}</span>`;
+            } finally {
+                spinner.classList.remove('animate-spin');
+                btn.disabled = false;
+            }
+        }
+
+        async function applyUpdate() {
+            if(!confirm('Tem certeza que deseja atualizar o sistema? Recomendamos fazer um backup antes.')) return;
+            
+            const btn = document.getElementById('btn-apply-update');
+            const status = document.getElementById('update-status');
+            
+            btn.disabled = true;
+            status.innerHTML = '<span class="text-blue-600 flex items-center"><i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i> Baixando e aplicando atualização, não feche esta página...</span>';
+            lucide.createIcons();
+            
+            try {
+                const res = await fetch('update.php?action=apply');
+                const data = await res.json();
+                if (data.success) {
+                     status.innerHTML = '<span class="text-emerald-600 font-bold flex items-center"><i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Sistema atualizado com sucesso! Recarregando...</span>';
+                     lucide.createIcons();
+                     setTimeout(() => window.location.reload(), 2000);
+                } else {
+                     status.innerHTML = `<span class="text-red-500 font-bold">Erro na atualização:</span> ${data.error}`;
+                     btn.disabled = false;
+                }
+            } catch(e) {
+                status.innerHTML = `<span class="text-red-500 font-bold">Erro de conexão:</span> ${e.message}`;
+                btn.disabled = false;
+            }
         }
 
         function renderDashboard(data) {

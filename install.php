@@ -47,9 +47,11 @@ $step = $_GET['step'] ?? 1;
                             id VARCHAR(50) PRIMARY KEY,
                             name VARCHAR(255),
                             email VARCHAR(255),
-                            role VARCHAR(50)
+                            password VARCHAR(255),
+                            role VARCHAR(50),
+                            theme VARCHAR(50) DEFAULT 'light'
                         )");
-                        echo "<div class='text-green-600'>✓ Tabela 'users' criada vazia.</div>";
+                        echo "<div class='text-green-600'>✓ Tabela 'users' criada.</div>";
                     }
 
                     // Download FPDF se não existir
@@ -66,14 +68,19 @@ $step = $_GET['step'] ?? 1;
                         echo "<div class='text-slate-500'>- Biblioteca FPDF já presente.</div>";
                     }
 
+                    // Ensure password column exists if updating from old version
+                    try { $pdo->exec("ALTER TABLE users ADD COLUMN password VARCHAR(255)"); } catch(Exception $e) {}
+                    try { $pdo->exec("ALTER TABLE users ADD COLUMN theme VARCHAR(50) DEFAULT 'light'"); } catch(Exception $e) {}
+
                     // Checa usuário admin
-                    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = 'admin'");
+                    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = 'admin@admin.com'");
                     $stmt->execute();
                     if ($stmt->fetchColumn() == 0) {
-                        $pdo->exec("INSERT INTO users (id, name, email, role) VALUES ('u_" . md5(uniqid()) . "', 'Administrador Padrão', 'admin', 'ADMIN')");
-                        echo "<div class='text-green-600 mt-2'>✓ Usuário padrão criado!<br><strong>Login:</strong> admin<br><strong>Nível:</strong> ADMIN</div>";
+                        $hash = password_hash('admin', PASSWORD_DEFAULT);
+                        $pdo->exec("INSERT INTO users (id, name, email, password, role) VALUES ('u_" . md5(uniqid()) . "', 'Administrador Padrão', 'admin@admin.com', '{$hash}', 'ADMIN')");
+                        echo "<div class='text-green-600 mt-2'>✓ Usuário padrão criado!<br><strong>Login:</strong> admin@admin.com<br><strong>Senha:</strong> admin<br><strong>Nível:</strong> ADMIN</div>";
                     } else {
-                        echo "<div class='text-slate-500'>- Usuário admin já existente no banco.</div>";
+                        echo "<div class='text-slate-500'>- Usuário admin@admin.com já existente no banco.</div>";
                     }
 
                     echo "<div class='text-blue-600 font-bold mt-4'>Instalação finalizada com sucesso!</div>";
